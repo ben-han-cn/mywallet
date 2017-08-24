@@ -19,21 +19,30 @@ var (
 const ethToWei = 1 << 17
 
 func init() {
-	flag.StringVar(&gethAddr, "g", "", "geth server address")
+	flag.StringVar(&gethAddr, "g", "http://106.75.52.31:8545", "geth server address")
 	flag.StringVar(&keyDir, "d", "", "key dir to generate key")
 	flag.StringVar(&keyFile, "f", "", "key file path")
 }
 
+var client *mywallet.EthClient
+
+func getClient() *mywallet.EthClient {
+	var err error
+	if client == nil {
+		client, err = mywallet.NewEthClient(gethAddr)
+		if err != nil {
+			log.Fatal("conn to geth failed:%s", err.Error())
+		}
+	}
+	return client
+}
+
 func main() {
 	flag.Parse()
-
-	client, err := mywallet.NewEthClient(gethAddr)
-	if err != nil {
-		log.Fatal("conn to geth failed:%s", err.Error())
-	}
-
 	log.SetFlags(0)
+
 	var account *mywallet.Account
+	var err error
 	if keyDir != "" {
 		account, err = mywallet.GenerateKey(keyDir)
 		if err != nil {
@@ -55,9 +64,9 @@ func main() {
 		if err != nil {
 			log.Fatal("get cmd failed:%s", err.Error())
 		} else if cmd == "get_balance" {
-			balance, err := client.GetBalance(account.Address())
+			balance, err := getClient().GetBalance(account.Address())
 			if err != nil {
-				log.Printf("get balance failed:%s\n", err.Error())
+				log.Printf("error: get balance failed:%s\n", err.Error())
 			} else {
 				log.Printf("%v wei\n", balance)
 			}
@@ -69,6 +78,11 @@ func main() {
 				log.Fatal("get target account failed:%s", err.Error())
 			}
 
+			if common.IsHexAddress(targetAddress) == false {
+				log.Printf("error: %s isn't valid address\n", targetAddress)
+				continue
+			}
+
 			valueStr, err := console.Stdin.PromptInput("value(ether):")
 			if err != nil {
 				log.Fatal("get value failed:%s", err.Error())
@@ -76,18 +90,20 @@ func main() {
 
 			value, err := strconv.ParseFloat(valueStr, 64)
 			if err != nil {
-				log.Println("value should be number")
+				log.Println("error: value should be number")
 				continue
 			}
 
-			err = client.Transfer(account, common.HexToAddress(targetAddress), mywallet.EthToWei(value))
+			err = getClient().Transfer(account, common.HexToAddress(targetAddress), mywallet.EthToWei(value))
 			if err != nil {
-				log.Printf("transfer failed:%s\n", err.Error())
+				log.Printf("error: transfer failed:%s\n", err.Error())
 			} else {
 				log.Println("transfer succeed")
 			}
 		} else if cmd == "exit" {
 			break
+		} else {
+			log.Println("error: cmd is unknown")
 		}
 	}
 }
