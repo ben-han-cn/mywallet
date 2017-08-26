@@ -68,7 +68,7 @@ func main() {
 			if err != nil {
 				log.Printf("error: get balance failed:%s\n", err.Error())
 			} else {
-				log.Printf("%v wei\n", balance)
+				log.Printf("%v eth\n", mywallet.WeiToEth(balance))
 			}
 		} else if cmd == "address" {
 			log.Printf("%s\n", account.Address().Hex())

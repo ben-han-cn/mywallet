@@ -7,7 +7,15 @@ import (
 	"testing"
 )
 
-func TestFloatToBigInt(t *testing.T) {
-	ether := big.NewInt(1000000000000000000)
-	ut.Equal(t, ether, EthToWei(1))
+func TestEtherToWei(t *testing.T) {
+	wei := big.NewInt(1000000000000000000)
+	ut.Equal(t, wei, EthToWei(1))
+}
+
+func TestWeiToEither(t *testing.T) {
+	wei := big.NewInt(100000000000000000)
+	ut.Equal(t, float64(0.1), WeiToEth(wei))
+
+	wei = big.NewInt(1)
+	ut.Equal(t, float64(0.000000000000000001), WeiToEth(wei))
 }
