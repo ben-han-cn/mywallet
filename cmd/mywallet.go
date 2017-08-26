@@ -19,7 +19,7 @@ var (
 const ethToWei = 1 << 17
 
 func init() {
-	flag.StringVar(&gethAddr, "g", "http://106.75.52.31:8545", "geth server address")
+	flag.StringVar(&gethAddr, "g", "http://106.75.123.218:8545", "geth server address")
 	flag.StringVar(&keyDir, "d", "", "key dir to generate key")
 	flag.StringVar(&keyFile, "f", "", "key file path")
 }
